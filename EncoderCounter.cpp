@@ -1,7 +1,7 @@
 /*
 Speed measuring uses hardware timer 20Hz, to measure the count per second in encoders.
 Refer to "Define encoder pins" section for wiring.
-Install "TimerInterrupt_Generic" library to run this code. Library website: https://github.com/khoih-prog/TimerInterrupt_Generic 
+Install "TimerInterrupt_Generic" library to run this code. Library website: https://gitssh ubuntu@192.168.0.145hub.com/khoih-prog/TimerInterrupt_Generic 
 */
 
 // These define's must be placed at the beginning before #include "megaAVR_TimerInterrupt.h"
@@ -26,35 +26,35 @@ Install "TimerInterrupt_Generic" library to run this code. Library website: http
 #include "TimerInterrupt_Generic.h"
 
 // Define encoder pins
-const byte leftEncA = 2;  // D2 reads left encoder's Ch.A
-const byte leftEncB = 3;  // D3 reads left encoder's Ch.B
-const byte rightEncA = 8; // D8 reads right encoder's Ch.A
-const byte rightEncB = 9; // D9 reads right encoder's Ch.B
+const byte leftEncA = 2;  // D2 reads left encoder's Ch.A (yellow)
+const byte leftEncB = 3;  // D3 reads left encoder's Ch.B (white)
+const byte rightEncA = 8; // D8 reads right encoder's Ch.A (yellow)
+const byte rightEncB = 9; // D9 reads right encoder's Ch.B (white)
 const byte leftVcc = A5;  // A5 serves as Vcc for left encoder
 const byte rightVcc = A6;  // A6 serves as Vcc for right encoder
 
 // Define constans for robot
-const byte COUNTS_PER_REV = 48;
-// const float GEAR_RATIO = 210.59;
-// const float WHEEL_RADIUS = 0.021; // m
-// const float WHEEL_SEPARATION = 0.09; // m
+const byte COUNTS_PER_REV = 64; 
+const float GEAR_RATIO = 70; 
+const float WHEEL_RADIUS = 0.04215; // m
+const float WHEEL_SEPARATION = 0.3885; // m
 
 // Define variables
-// int8_t leftMotorDir = 0; // forward: 1; backward: -1
-// int8_t rightMotorDir = 0; // forward: 1; backward: -1
+int8_t leftMotorDir = 0; // forward: 1; backward: -1         //this line was commented out
+int8_t rightMotorDir = 0; // forward: 1; backward: -1        //this line was commented out
 int32_t leftCounter = 0;
 int32_t rightCounter = 0;
 float leftCPS = 0.0;
 float rightCPS = 0.0;
-// float linear = 0.0; 
-// float angular = 0.0; 
+float linear = 0.0; 
+float angular = 0.0; 
 
 void TimerHandler1(void)
 {
   leftCPS = leftMotorDir * leftCounter * 1000 / TIMER1_INTERVAL_MS; // counts per second
   rightCPS = rightMotorDir * rightCounter * 1000 / TIMER1_INTERVAL_MS;
-  //   linear = (leftCPS + rightCPS) / (COUNTS_PER_REV * GEAR_RATIO) * (2 * M_PI) * WHEEL_RADIUS / 2; // meters per second
-  //   angular = (rightCPS - leftCPS) / (COUNTS_PER_REV * GEAR_RATIO) * (2 * M_PI) * WHEEL_RADIUS / WHEEL_SEPARATION; // radians per second
+  linear = (leftCPS + rightCPS) / (COUNTS_PER_REV * GEAR_RATIO) * (2 * M_PI) * WHEEL_RADIUS / 2; // meters per second
+  angular = (rightCPS - leftCPS) / (COUNTS_PER_REV * GEAR_RATIO) * (2 * M_PI) * WHEEL_RADIUS / WHEEL_SEPARATION; // radians per second
   if (TIMER_INTERRUPT_DEBUG > 1)
   {
     Serial.print(leftCPS);
@@ -90,6 +90,8 @@ void setup()
   // Set pins to power up encoders
   pinMode(leftVcc, OUTPUT);
   pinMode(rightVcc, OUTPUT);
+  digitalWrite(A5, HIGH); // sets the analog pin A5 on   ***I added these two lines. Otherwise, the encoders aren't turned on
+  digitalWrite(A6, HIGH); // sets the analog pin A6 on
   
   // Set all encoder pins to inputs
   pinMode(leftEncA, INPUT);
@@ -132,14 +134,16 @@ void setup()
 void loop()
 {
   // Print speed
+  //Serial.print(leftCPS);
+  //Serial.print(",");
+  //Serial.println(rightCPS);
+  Serial.print("left cps: ");
   Serial.print(leftCPS);
+  Serial.print(", right cps: ");
+  Serial.print(rightCPS);
+  Serial.print("linear: ");
+  Serial.print(linear);
+  Serial.print("angular: ");
   Serial.print(",");
-  Serial.println(rightCPS);
-  // Serial.print("left cps: ");
-  // Serial.print(leftCPS);
-  // Serial.print(", right cps: ");
-  // Serial.println(rightCPS);
-  //   Serial.print(linear);
-  //   Serial.print(",");
-  //   Serial.println(angular);
+  Serial.println(angular);
 }
