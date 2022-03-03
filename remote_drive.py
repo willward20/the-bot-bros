@@ -12,7 +12,7 @@ try:
     while speed < 0.9:
         speed = speed + 0.1
         motor1.backward(speed)
-        motor2.backward(speed/2)
+        motor2.backward(speed)
         sleep(1)
         print(speed)
     motor1.forward(0.99)
