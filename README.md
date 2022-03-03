@@ -1,9 +1,11 @@
 # the-bot-bros
 UCA Robotics 2 Group -- Austin, Brandon, and Will
 
-ssh ubuntu@192.168.0.112
-Password: 52219Alivia
-
+Pi
+  Login: Ubuntu
+  Password: 2022
+  IP: 192.168.0.15/24
+  
 Motor: Pololu Item #4754
 
 ROS Domain ID: 42
