@@ -17,8 +17,6 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from gpiozero import PhaseEnableRobot, LED
 
-#robot = PhaseEnableRobot(left=(24,12), right=(25,13)) #commented this line out to replace it with BetterRobot
-robot = BetterRobot(left=(24,12), right=(25,13)) # edited verison of PhaseEnableRobot with new motor controls, comment out if this messes anything up
 
 motor1=LED(23) #these two lines initialize the motors
 motor2=LED(22) #
@@ -30,24 +28,28 @@ motor2.on() #
 ### backward motor speed may need to be switched, needs to be tested
 class BetterRobot(PhaseEnableRobot):
  
-    def backward_left(self, speed = 1)
+    def backward_left(self, speed = 0.99):
         self.left_motor.backward(speed/2) #motor speed halved to keep robot moving backward AND turning left
         self.right_motor.backward(speed)
         
-    def backward_right(self, speed = 1)
+    def backward_right(self, speed = 0.99):
         self.left_motor.backward(speed)
         self.right_motor.backward(speed/2) #motorspeed halved to keep the robot moving backward and turning right
     
-    def forward_left(self, speed = 1):
+    def forward_left(self, speed = 0.99):
         self.left_motor.forward(speed/2) #motor speed halved to keep the robot moving forward AND turning left
         self.right_motor.forward(speed)
         
-    def forward_right(self, speed = 1):
+    def forward_right(self, speed = 0.99):
         self.left_motor.forward(speed)
-        self.right_motor.forward(speed/2)#motor speed halved to keep the robot moving forward AND turning right
+        self.right_motor.forward(speed/2) #motor speed halved to keep the robot moving forward AND turning right
 
 
 #########
+
+
+
+
 
 class MinimalSubscriber(Node):
 
@@ -55,7 +57,7 @@ class MinimalSubscriber(Node):
         super().__init__('minimal_subscriber')
         self.subscription = self.create_subscription(
             Twist,
-            '/turtle1/cmd_vel', #may need to be changed to just '/cmd_vel'
+            '/cmd_vel', #may need to be changed to just '/cmd_vel'
             self.listener_callback,
             10)
         self.subscription  # prevent unused variable warning
@@ -82,25 +84,25 @@ class MinimalSubscriber(Node):
         self.get_logger().info('I heard: "%s"' % msg.angular.z)
         #forward (I)
         if msg.linear.x > 0:
-            robot.forward(0.35)
+            self.forward(0.35)
         #forward right (O)
         elif msg.linear.x > 0 and msg.angular.z > 0:
-            robot.forward_right(0.35)
+            self.forward_right(0.35)
         #forward left (U)
         elif msg.linear.x > 0 and msg.angular.z < 0:
-            robot.forward_left(0.35)
+            self.forward_left(0.35)
         #backward (<)
         elif msg.linear.x < 0:
-            robot.backward(0.35)
+            self.backward(0.35)
         #backward right (>)
         elif msg.linear.x < 0 and msg.angular.z > 0:
-            robot.backward_right(0.35)
+            self.backward_right(0.35)
         #backward left (M)
         elif msg.linear.x < 0 and msg.angular.z < 0:
-            robot.backward_left(0.35)
+            self.backward_left(0.35)
         #robot stop
         else:
-            robot.stop()
+            self.stop()
    #################################################################
 
 def main(args=None):
@@ -108,7 +110,12 @@ def main(args=None):
     
     rclpy.init(args=args)
 
-    minimal_subscriber = MinimalSubscriber()
+    #robot = PhaseEnableRobot(left=(24,12), right=(25,13)) #commented this line out to replace it with BetterRobot
+    robot = BetterRobot(left=(24,12), right=(25,13)) # edited verison of PhaseEnableRobot with new motor controls, comment out if this messes anything up
+
+    print("I'm working")
+
+    minimal_subscriber = MinimalSubscriber() # creates object of class MinimalSubscriber
     
 
     rclpy.spin(minimal_subscriber)
