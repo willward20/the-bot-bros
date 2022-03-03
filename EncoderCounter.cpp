@@ -90,8 +90,8 @@ void setup()
   // Set pins to power up encoders
   pinMode(leftVcc, OUTPUT);
   pinMode(rightVcc, OUTPUT);
-  digitalWrite(A5, HIGH); // sets the analog pin A5 on   ***I added these two lines. Otherwise, the encoders aren't turned on
-  digitalWrite(A6, HIGH); // sets the analog pin A6 on
+  digitalWrite(leftVcc, HIGH); // sets the analog pin A5 on   ***I added these two lines. Otherwise, the encoders aren't turned on
+  digitalWrite(rightVcc, HIGH); // sets the analog pin A6 on
   
   // Set all encoder pins to inputs
   pinMode(leftEncA, INPUT);
@@ -129,21 +129,24 @@ void setup()
   // Initialize counter
   leftCounter = 0;
   rightCounter = 0;
+  leftMotorDir = 1;  // CAREFUL!!! NEED GET ACTUAL DIR 
+  rightMotorDir = 1;  //CAREFUL!!! NEED GET ACTUAL DIR
 }
 
 void loop()
 {
   // Print speed
-  //Serial.print(leftCPS);
-  //Serial.print(",");
-  //Serial.println(rightCPS);
-  Serial.print("left cps: ");
-  Serial.print(leftCPS);
-  Serial.print(", right cps: ");
-  Serial.print(rightCPS);
+  // Serial.print(leftCPS);
+  // Serial.print(",");
+  // Serial.println(rightCPS);
+  // Serial.print("left cps: ");
+  // Serial.print(leftCPS);
+  // Serial.print(", right cps: ");
+  // Serial.print(rightCPS);
   Serial.print("linear: ");
   Serial.print(linear);
   Serial.print("angular: ");
   Serial.print(",");
   Serial.println(angular);
+  delay(10);
 }
