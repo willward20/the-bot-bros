@@ -20,7 +20,7 @@ from gpiozero import PhaseEnableRobot, LED
 
 
 ######### Combined the BetterRobot and MinimalSubscriber classes ######
-class TheBot(PhaseEnableRobot, Node):
+class TheBot(Node): #phaseenablerobot doesn't need to be an argument because it is already being imported
     def __init__(self):
         super().__init__('minimal_subscriber')
         self.subscription = self.create_subscription(
@@ -68,7 +68,13 @@ class TheBot(PhaseEnableRobot, Node):
         #backward left (M)
         elif msg.linear.x < 0 and msg.angular.z < 0:
             self.backward_left(0.35)
-        #robot stop
+        #left (J)
+        elif msg.linear.x = 0 and msg.angular.z < 0:
+            self.robot.left(0.35)
+        #right (L)
+        elif msg.linear.x = 0 and msg.angular.z > 0:
+            self.robot.right(0.35)
+        #robot stop (K)
         else:
             self.robot.stop()
 
