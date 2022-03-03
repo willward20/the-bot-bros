@@ -41,25 +41,27 @@ const byte rightEncB = 9; // D9 reads right encoder's Ch.B
 // const byte rightVcc = A6;  // A6 serves as Vcc for right encoder
 
 // Define constans for robot
-const byte COUNTS_PER_REV = 12;
-const float GEAR_RATIO = 210.59;
-const float WHEEL_RADIUS = 0.021; // m
-const float WHEEL_SEPARATION = 0.09; // m
+const byte COUNTS_PER_REV = 64;
+const float GEAR_RATIO = 70;
+const float WHEEL_RADIUS = 0.0419; // m
+const float WHEEL_SEPARATION = 0.3937; // m
 
 // Define variables
-int8_t leftMotorDir = 0; // forward: 1; backward: -1
-int8_t rightMotorDir = 0; // forward: 1; backward: -1
 int32_t leftCounter = 0;
 int32_t rightCounter = 0;
 float leftCPS = 0.0;
 float rightCPS = 0.0;
+float linear_l = 0.0;
+float linear_r = 0.0;
 float linear = 0.0; 
 float angular = 0.0; 
 
 void TimerHandler1(void)
 {
-  leftCPS = leftMotorDir * leftCounter * 1000 / TIMER1_INTERVAL_MS; // counts per second
-  rightCPS = rightMotorDir * rightCounter * 1000 / TIMER1_INTERVAL_MS;
+  leftCPS = leftCounter * 1000 / TIMER1_INTERVAL_MS; // counts per second
+  rightCPS = rightCounter * 1000 / TIMER1_INTERVAL_MS;
+  linear_l = (leftCPS) / (COUNTS_PER_REV * GEAR_RATIO) * (2 * M_PI) * WHEEL_RADIUS; // left speed m/s
+  linear_r = (rightCPS) / (COUNTS_PER_REV * GEAR_RATIO) * (2 * M_PI) * WHEEL_RADIUS; // right speed m/s
   linear = (leftCPS + rightCPS) / (COUNTS_PER_REV * GEAR_RATIO) * (2 * M_PI) * WHEEL_RADIUS / 2; // meters per second
   angular = (rightCPS - leftCPS) / (COUNTS_PER_REV * GEAR_RATIO) * (2 * M_PI) * WHEEL_RADIUS / WHEEL_SEPARATION; // radians per second
   if (TIMER_INTERRUPT_DEBUG > 1)
@@ -148,10 +150,8 @@ void setup()
   // Set motor direction
   digitalWrite(leftIn1, HIGH);
   digitalWrite(leftIn2, LOW);
-  leftMotorDir = -1;
   digitalWrite(rightIn1, LOW);
   digitalWrite(rightIn2, HIGH);
-  rightMotorDir = 1;
 }
 
 void loop()
@@ -160,9 +160,17 @@ void loop()
   Serial.print("left cps: ");
   Serial.print(leftCPS);
   Serial.print(", right cps: ");
-  Serial.println(rightCPS);
+  Serial.print(rightCPS);
+  Serial.print("linear_l: ");
+  Serial.print(linear_l);
+  Serial.print(",");
+  Serial.print("linear_r: ");
+  Serial.print(linear_r);
+  Serial.print(",");
+  Serial.print("linear: ");
   Serial.print(linear);
   Serial.print(",");
+  Serial.print("angular: ");
   Serial.println(angular);
 
   // Drive motors
