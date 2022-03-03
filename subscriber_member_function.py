@@ -69,10 +69,10 @@ class TheBot(Node): #phaseenablerobot doesn't need to be an argument because it 
         elif msg.linear.x < 0 and msg.angular.z < 0:
             self.backward_left(0.35)
         #left (J)
-        elif msg.linear.x = 0 and msg.angular.z < 0:
+        elif msg.linear.x == 0 and msg.angular.z < 0:
             self.robot.left(0.35)
         #right (L)
-        elif msg.linear.x = 0 and msg.angular.z > 0:
+        elif msg.linear.x == 0 and msg.angular.z > 0:
             self.robot.right(0.35)
         #robot stop (K)
         else:
