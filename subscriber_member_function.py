@@ -33,12 +33,12 @@ class TheBot(Node): #phaseenablerobot doesn't need to be an argument because it 
         self.robot = PhaseEnableRobot(left=(24,12), right=(25,13))
 
     def backward_left(self, speed = 0.99):
-        self.robot.left_motor.backward(speed) #motor speed halved to keep robot moving backward AND turning left
-        self.robot.right_motor.backward(speed/2)
+        self.robot.left_motor.backward(speed/2) #motor speed halved to keep robot moving backward AND turning left
+        self.robot.right_motor.backward(speed)
 
     def backward_right(self, speed = 0.99):
-        self.robot.left_motor.backward(speed/2)
-        self.robot.right_motor.backward(speed) #motorspeed halved to keep the robot moving backward and turning right
+        self.robot.left_motor.backward(speed)
+        self.robot.right_motor.backward(speed/2) #motorspeed halved to keep the robot moving backward and turning right
 
     def forward_left(self, speed = 0.99):
         self.robot.left_motor.forward(speed/2) #motor speed halved to keep the robot moving forward AND turning left
