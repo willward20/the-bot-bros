@@ -110,25 +110,27 @@ void setup()
   pinMode(rightEncB, INPUT);
 
   Serial.begin(9600);
-  while (!Serial)
-    ;
-  Serial.print(F("\nStarting ISR_RPM_Measure on "));
-  Serial.println(BOARD_NAME);
-  Serial.println(MEGA_AVR_TIMER_INTERRUPT_VERSION);
-  Serial.println(TIMER_INTERRUPT_GENERIC_VERSION);
-  Serial.print(F("CPU Frequency = "));
-  Serial.print(F_CPU / 1000000);
-  Serial.println(F(" MHz"));
-  Serial.print(F("TCB Clock Frequency = "));
+//  while (!Serial)
+//    ;
+  //Serial.print(F("\nStarting ISR_RPM_Measure on "));
+  //Serial.println(BOARD_NAME);
+//  Serial.println(MEGA_AVR_TIMER_INTERRUPT_VERSION);
+//  Serial.println(TIMER_INTERRUPT_GENERIC_VERSION);
+//  Serial.print(F("CPU Frequency = "));
+//  Serial.print(F_CPU / 1000000);
+//  Serial.println(F(" MHz"));
+//  Serial.print(F("TCB Clock Frequency = "));
 
   ITimer1.init(); // set timer for 1sec
-  if (ITimer1.attachInterruptInterval(TIMER1_INTERVAL_MS, TimerHandler1))
-  {
-    Serial.print(F("Starting  ITimer1 OK, millis() = "));
-    Serial.println(millis());
-  }
-  else
-    Serial.println(F("Can't set ITimer1. Select another freq. or timer"));
+    if (ITimer1.attachInterruptInterval(TIMER1_INTERVAL_MS, TimerHandler1))
+    {
+//    Serial.print(F("Starting  ITimer1 OK, millis() = "));
+//    Serial.println(millis());
+      ;
+    }
+    else
+//    Serial.println(F("Can't set ITimer1. Select another freq. or timer"));
+      ;
 
   // Assumming the interruptPin will go LOW
   attachInterrupt(digitalPinToInterrupt(leftEncA), ISR_countLeftEncA, CHANGE); // Increase left counter A when speed sensor pin changes
@@ -157,20 +159,22 @@ void setup()
 void loop()
 {
   // Print speed
-  Serial.print("left cps: ");
+  //Serial.print("left cps: ");
   Serial.print(leftCPS);
-  Serial.print(", right cps: ");
+  //Serial.print(", right cps: ");
+  Serial.print(",");
   Serial.print(rightCPS);
-  Serial.print("linear_l: ");
+  //Serial.print("linear_l: ");
+  Serial.print(",");
   Serial.print(linear_l);
   Serial.print(",");
-  Serial.print("linear_r: ");
+  //Serial.print("linear_r: ");
   Serial.print(linear_r);
   Serial.print(",");
-  Serial.print("linear: ");
+  //Serial.print("linear: ");
   Serial.print(linear);
   Serial.print(",");
-  Serial.print("angular: ");
+  //Serial.print("angular: ");
   Serial.println(angular);
 
   // Drive motors
