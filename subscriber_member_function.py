@@ -52,22 +52,26 @@ class TheBot(Node): #phaseenablerobot doesn't need to be an argument because it 
         self.get_logger().info('I heard: "%s"' % msg.angular.z)
         #forward (I)
         if msg.linear.x > 0:
-            self.robot.forward()
-        #forward right (O)
-        elif msg.linear.x > 0 and msg.angular.z > 0:
-            self.forward_right()
-        #forward left (U)
-        elif msg.linear.x > 0 and msg.angular.z < 0:
-            self.forward_left()
-        #backward (<)
+            #forward right (O)
+            if msg.angular.z > 0:
+                self.forward_right()
+            #forward left (U)
+            elif msg.angular.z < 0:
+                self.forward_left()
+            #straight forward(I)
+            else:
+                self.robot.forward()
+        #backward motions
         elif msg.linear.x < 0:
-            self.robot.backward()
-        #backward right (>)
-        elif msg.linear.x < 0 and msg.angular.z > 0:
-            self.backward_right()
-        #backward left (M)
-        elif msg.linear.x < 0 and msg.angular.z < 0:
-            self.backward_left()
+            #backward right (>)
+            if msg.angular.z > 0:
+                self.backward_right()
+            #backward left (M)
+            elif msg.angular.z < 0:
+                self.backward_left()
+            #straight backward (>)
+            else:
+                self.robot.backward()
         #left (J)
         elif msg.linear.x == 0 and msg.angular.z < 0:
             self.robot.left()
