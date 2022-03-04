@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#from time import sleep
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
@@ -30,44 +31,48 @@ class TheBot(Node): #phaseenablerobot doesn't need to be an argument because it 
             10)
         self.subscription  # prevent unused variable warning
         self.robot = PhaseEnableRobot(left=(24,12), right=(25,13))
- 
+
     def backward_left(self, speed = 0.99):
-        self.robot.left_motor.backward(speed/2) #motor speed halved to keep robot moving backward AND turning left
-        self.robot.right_motor.backward(speed)
-        
+        self.robot.left_motor.backward(speed) #motor speed halved to keep robot moving backward AND turning left
+        self.robot.right_motor.backward(speed/2)
+
     def backward_right(self, speed = 0.99):
-        self.robot.left_motor.backward(speed)
-        self.robot.right_motor.backward(speed/2) #motorspeed halved to keep the robot moving backward and turning right
-    
+        self.robot.left_motor.backward(speed/2)
+        self.robot.right_motor.backward(speed) #motorspeed halved to keep the robot moving backward and turning right
+
     def forward_left(self, speed = 0.99):
         self.robot.left_motor.forward(speed/2) #motor speed halved to keep the robot moving forward AND turning left
         self.robot.right_motor.forward(speed)
-        
+
     def forward_right(self, speed = 0.99):
         self.robot.left_motor.forward(speed)
         self.robot.right_motor.forward(speed/2) #motor speed halved to keep the robot moving forward AND turning right
-        
+
     def listener_callback(self, msg):
         self.get_logger().info('I heard: "%s"' % msg.linear.x)
         self.get_logger().info('I heard: "%s"' % msg.angular.z)
-        #forward (I)
+        #forward motions
         if msg.linear.x > 0:
-            self.robot.forward()
-        #forward right (O)
-        elif msg.linear.x > 0 and msg.angular.z > 0:
-            self.forward_right()
-        #forward left (U)
-        elif msg.linear.x > 0 and msg.angular.z < 0:
-            self.forward_left()
-        #backward (<)
+            #forward right (O)
+            if msg.angular.z > 0:
+                self.forward_right()
+            #forward left (U)
+            elif msg.angular.z < 0:
+                self.forward_left()
+            #straight forward(I)
+            else:
+                self.robot.forward()
+        #backward motions
         elif msg.linear.x < 0:
-            self.robot.backward()
-        #backward right (>)
-        elif msg.linear.x < 0 and msg.angular.z > 0:
-            self.backward_right()
-        #backward left (M)
-        elif msg.linear.x < 0 and msg.angular.z < 0:
-            self.backward_left()
+            #backward right (>)
+            if msg.angular.z > 0:
+                self.backward_right()
+            #backward left (M)
+            elif msg.angular.z < 0:
+                self.backward_left()
+            #straight backward (>)
+            else:
+                self.robot.backward()
         #left (J)
         elif msg.linear.x == 0 and msg.angular.z < 0:
             self.robot.left()
@@ -81,14 +86,13 @@ class TheBot(Node): #phaseenablerobot doesn't need to be an argument because it 
 
 
 def main(args=None):
-     
-    
+
     rclpy.init(args=args)
 
     print("I'm working")
 
     the_bot = TheBot() # creates object of class TheBot
-    
+
 
     rclpy.spin(the_bot)
 
