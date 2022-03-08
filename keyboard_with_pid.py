@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#from time import sleep
+"""
+NOTE: This program is currently under construction. I want to combine PID 
+      control and keyboard input. Still a work in progress.
+"""
+
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
@@ -29,6 +33,15 @@ class TheBot(Node):
             self.pid_control,
             10)
         self.subscription  # prevent unused variable warning
+
+        self.subscription2 = self.create_subscription(
+            Twist,
+            '/cmd_vel', #may need to be changed to just '/cmd_vel'
+            self.get_keyboard,
+            10)
+        self.subscription2  # prevent unused variable warning
+
+
         self.robot = PhaseEnableRobot(right=(24,12), left=(25,13))
         self.linear_l = 0.0
         self.linear_r = 0.0
@@ -38,10 +51,6 @@ class TheBot(Node):
         self.r_error = 0.0
         self.l_pwm = 0.0
         self.r_pwm = 0.0
-        self.start_time = 0.0
-        self.left_speeds = []
-        self.right_speeds = []
-        self.time_data = []
 
     def pid_control(self, msg):
         print('Left Wheel Speed: ',  msg.linear.x)
@@ -73,38 +82,29 @@ class TheBot(Node):
         self.robot.left_motor.forward(self.l_pwm)
         self.robot.right_motor.forward(self.r_pwm)
 
-        self.time_data.append(time.time() - self.start_time)
-        self.left_speeds.append(self.linear_l)
-        self.right_speeds.append(self.linear_r)
+
+    def get_keyboard(self, msg):
+        self.get_logger().info('I heard: "%s"' % msg.linear.x)
+        self.get_logger().info('I heard: "%s"' % msg.angular.z)
+        # finish this later!! Find a way to incorporate keyboard input into
+        # the pid. Need to seperate into left and right wheels for each command
 
 def main(args=None):
-    try:
-        rclpy.init(args=args)
 
-        print("I'm working")
+    rclpy.init(args=args)
 
-        the_bot = TheBot() # creates object of class TheBot
-        the_bot.desired_speed = 0.6 # m/s?
+    print("I'm working")
 
-        the_bot.start_time = time.time()
+    the_bot = TheBot() # creates object of class TheBot
+    the_bot.desired_speed = 0.6 # m/s?
 
-        rclpy.spin(the_bot)
+    rclpy.spin(the_bot)
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-
-    except KeyboardInterrupt:
-        # open a data file for writing in same directory as the working program
-        file = open('P_control.txt', 'w')
-        for n in range(len(the_bot.time_data)):
-            # write the data as comma delimited
-            file.write(str(the_bot.time_data[n]) + ',' + str(the_bot.left_speeds[n]) + ',' + str(the_bot.right_speeds[n]) + '\n')
-        # always close the file you are using!
-        file.close()
-
-        the_bot.destroy_node()
-        rclpy.shutdown()
+    the_bot.destroy_node()
+    rclpy.shutdown()
 
 
 if __name__ == '__main__':
