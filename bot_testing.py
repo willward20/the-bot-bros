@@ -20,68 +20,54 @@ from gpiozero import PhaseEnableRobot, LED
 import time
 
 
-######### Combined the BetterRobot and MinimalSubscriber classes ######
-class TheBot(Node): #phaseenablerobot doesn't need to be an argument because it is already being imported
+class TheBot(Node):
     def __init__(self):
-        super().__init__('minimal_subscriber')
+        super().__init__('odom_subscriber')
         self.subscription = self.create_subscription(
             Twist,
-            '/cmd_vel', #may need to be changed to just '/cmd_vel'
-            self.listener_callback,
+            '/linear_stuff',
+            self.pid_control,
             10)
         self.subscription  # prevent unused variable warning
-        self.robot = PhaseEnableRobot(left=(24,12), right=(25,13))
+        self.robot = PhaseEnableRobot(right=(24,12), left=(25,13))
+        self.linear_l = 0.0
+        self.linear_r = 0.0
+        self.desired_speed = 0.0
+        self.p = 0.1 #proportionality constant (for P)
+        self.l_error = 0.0 # reference ang speed - actual ang speed
+        self.r_error = 0.0
+        self.l_pwm = 0.0
+        self.r_pwm = 0.0
 
-    def backward_left(self, speed = 0.99):
-        self.robot.left_motor.backward(speed/2) #motor speed halved to keep robot moving backward AND turning left
-        self.robot.right_motor.backward(speed)
+    def pid_control(self, msg):
+        print('Left Wheel Speed: ',  msg.linear.x)
+        print('Right Wheel Speed: ', msg.linear.y)
+        self.linear_l = msg.linear.x
+        self.linear_r = msg.linear.y
 
-    def backward_right(self, speed = 0.99):
-        self.robot.left_motor.backward(speed)
-        self.robot.right_motor.backward(speed/2) #motorspeed halved to keep the robot moving backward and turning right
+        self.l_error = self.desired_speed - self.linear_l
+        self.r_error = self.desired_speed - self.linear_r
 
-    def forward_left(self, speed = 0.99):
-        self.robot.left_motor.forward(speed/2) #motor speed halved to keep the robot moving forward AND turning left
-        self.robot.right_motor.forward(speed)
+        print("l_error", self.l_error)
+        print("r_error", self.r_error)
 
-    def forward_right(self, speed = 0.99):
-        self.robot.left_motor.forward(speed)
-        self.robot.right_motor.forward(speed/2) #motor speed halved to keep the robot moving forward AND turning right
+        self.l_pwm = self.l_pwm + self.p*self.l_error
+        self.r_pwm = self.r_pwm + self.p*self.r_error
 
-    def listener_callback(self, msg):
-        self.get_logger().info('I heard: "%s"' % msg.linear.x)
-        self.get_logger().info('I heard: "%s"' % msg.angular.z)
-        #forward motions
-        if msg.linear.x > 0:
-            #forward right (O)
-            if msg.angular.z > 0:
-                self.forward_right()
-            #forward left (U)
-            elif msg.angular.z < 0:
-                self.forward_left()
-            #straight forward(I)
-            else:
-                self.robot.forward()
-        #backward motions
-        elif msg.linear.x < 0:
-            #backward right (>)
-            if msg.angular.z > 0:
-                self.backward_right()
-            #backward left (M)
-            elif msg.angular.z < 0:
-                self.backward_left()
-            #straight backward (>)
-            else:
-                self.robot.backward()
-        #left (J)
-        elif msg.linear.x == 0 and msg.angular.z < 0:
-            self.robot.left()
-        #right (L)
-        elif msg.linear.x == 0 and msg.angular.z > 0:
-            self.robot.right()
-        #robot stop (K)
-        else:
-            self.robot.stop()
+        if (self.r_pwm > 0.999):
+            self.r_pwm = 0.999
+        if (self.l_pwm > 0.999):
+            self.l_pwm = 0.999
+        if (self.r_pwm < 0.1):
+            self.r_pwm = 0.1
+        if (self.l_pwm < 0.1):
+            self.l_pwm = 0.1
+
+        print("l_pwm ", self.l_pwm)
+        print("r_pwm ", self.r_pwm)
+        print(" ")
+        self.robot.left_motor.forward(self.l_pwm)
+        self.robot.right_motor.forward(self.r_pwm)
 
 
 
@@ -92,7 +78,7 @@ def main(args=None):
     print("I'm working")
 
     the_bot = TheBot() # creates object of class TheBot
-
+    the_bot.desired_speed = 0.6 # m/s?
 
     rclpy.spin(the_bot)
 
