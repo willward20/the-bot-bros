@@ -18,7 +18,8 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from gpiozero import PhaseEnableRobot, LED
 import time
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 class TheBot(Node):
     def __init__(self):
@@ -33,7 +34,7 @@ class TheBot(Node):
         self.linear_l = 0.0
         self.linear_r = 0.0
         self.desired_speed = 0.0
-        self.p_left = 0.11
+        self.p_left = 0.1
         self.p_right = 0.1 #This one works
         self.l_error = 0.0 # reference ang speed - actual ang speed
         self.r_error = 0.0
@@ -98,12 +99,28 @@ def main(args=None):
     except KeyboardInterrupt:
         # open a data file for writing in same directory as the working program
 
-        file = open('P_control_0.11l_0.1r.txt', 'w')
+        file = open('p_control_final.txt', 'w')
         for n in range(len(the_bot.time_data)):
             # write the data as comma delimited
             file.write(str(the_bot.time_data[n]) + ',' + str(the_bot.left_speeds[n]) + ',' + str(the_bot.right_speeds[n]) + '\n')
         # always close the file you are using!
         file.close()
+
+        # make a plot
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+
+        # make an xy scatter plot
+        plt.scatter(the_bot.time_data,the_bot.left_speeds,color='red', label='Left Wheel')
+        plt.scatter(the_bot.time_data,the_bot.right_speeds,color='blue', label='Right Wheel')
+
+        # label the axes etc
+        ax.set_xlabel('Time (s)')
+        ax.set_ylabel('Velocity (m/s)')
+        ax.set_title('P Control (p=0.1 for both)')
+        plt.legend(loc = 'lower right') # legend location can be changed
+
+        plt.savefig('P_control_0.11l_0.1r.png')
 
         the_bot.destroy_node()
         rclpy.shutdown()
