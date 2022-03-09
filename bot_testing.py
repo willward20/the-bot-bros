@@ -33,7 +33,8 @@ class TheBot(Node):
         self.linear_l = 0.0
         self.linear_r = 0.0
         self.desired_speed = 0.0
-        self.p = 0.1 #proportionality constant (for P)
+        self.p_left = 0.11
+        self.p_right = 0.1 #This one works
         self.l_error = 0.0 # reference ang speed - actual ang speed
         self.r_error = 0.0
         self.l_pwm = 0.0
@@ -55,8 +56,8 @@ class TheBot(Node):
         print("l_error", self.l_error)
         print("r_error", self.r_error)
 
-        self.l_pwm = self.l_pwm + self.p*self.l_error
-        self.r_pwm = self.r_pwm + self.p*self.r_error
+        self.l_pwm = self.l_pwm + self.p_left*self.l_error
+        self.r_pwm = self.r_pwm + self.p_right*self.r_error
 
         if (self.r_pwm > 0.999):
             self.r_pwm = 0.999
