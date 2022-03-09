@@ -85,7 +85,7 @@ def main(args=None):
         print("I'm working")
 
         the_bot = TheBot() # creates object of class TheBot
-        the_bot.desired_speed = 0.6 # m/s?
+        the_bot.desired_speed = 0.55 # m/s?
 
         the_bot.start_time = time.time()
 
@@ -97,7 +97,8 @@ def main(args=None):
 
     except KeyboardInterrupt:
         # open a data file for writing in same directory as the working program
-        file = open('P_control.txt', 'w')
+
+        file = open('P_control_0.11l_0.1r.txt', 'w')
         for n in range(len(the_bot.time_data)):
             # write the data as comma delimited
             file.write(str(the_bot.time_data[n]) + ',' + str(the_bot.left_speeds[n]) + ',' + str(the_bot.right_speeds[n]) + '\n')
