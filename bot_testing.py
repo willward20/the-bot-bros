@@ -99,7 +99,7 @@ def main(args=None):
     except KeyboardInterrupt:
         # open a data file for writing in same directory as the working program
 
-        file = open('p_control_final.txt', 'w')
+        file = open('p_control_final_no_load.txt', 'w')
         for n in range(len(the_bot.time_data)):
             # write the data as comma delimited
             file.write(str(the_bot.time_data[n]) + ',' + str(the_bot.left_speeds[n]) + ',' + str(the_bot.right_speeds[n]) + '\n')
@@ -120,7 +120,7 @@ def main(args=None):
         ax.set_title('P Control (p=0.1 for both)')
         plt.legend(loc = 'lower right') # legend location can be changed
 
-        plt.savefig('P_control_0.11l_0.1r.png')
+        plt.savefig('p_control_final_no_load.png')
 
         the_bot.destroy_node()
         rclpy.shutdown()
