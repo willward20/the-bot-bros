@@ -20,6 +20,7 @@ Speed measuring uses high frequency hardware timer 1Hz == 1ms) to measure the ti
 #define USE_TIMER_3 false
 
 #define TIMER1_INTERVAL_MS 50 // 1s = 1000ms
+                               // try 1000ms = 1Hz or something else smaller
 
 #include "TimerInterrupt_Generic.h"
 

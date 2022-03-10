@@ -34,12 +34,11 @@ class TheBot(Node):
         self.linear_l = 0.0
         self.linear_r = 0.0
         self.desired_speed = 0.0
-        self.p_left = 0.1
-        self.p_right = 0.1 #This one works
+        self.p = 0.0 # was 0.1
         self.l_error = 0.0 # reference ang speed - actual ang speed
         self.r_error = 0.0
-        self.l_pwm = 0.0
-        self.r_pwm = 0.0
+        self.l_pwm = 0.96
+        self.r_pwm = 0.96
         self.start_time = 0.0
         self.left_speeds = []
         self.right_speeds = []
@@ -57,8 +56,8 @@ class TheBot(Node):
         print("l_error", self.l_error)
         print("r_error", self.r_error)
 
-        self.l_pwm = self.l_pwm + self.p_left*self.l_error
-        self.r_pwm = self.r_pwm + self.p_right*self.r_error
+        self.l_pwm = self.l_pwm + self.p*self.l_error
+        self.r_pwm = self.r_pwm + self.p*self.r_error
 
         if (self.r_pwm > 0.999):
             self.r_pwm = 0.999
@@ -89,17 +88,13 @@ def main(args=None):
         the_bot.desired_speed = 0.55 # m/s?
 
         the_bot.start_time = time.time()
-
         rclpy.spin(the_bot)
 
-    # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
 
     except KeyboardInterrupt:
         # open a data file for writing in same directory as the working program
 
-        file = open('p_control_final_no_load.txt', 'w')
+        file = open('Data/no_p_no_load.txt', 'w')
         for n in range(len(the_bot.time_data)):
             # write the data as comma delimited
             file.write(str(the_bot.time_data[n]) + ',' + str(the_bot.left_speeds[n]) + ',' + str(the_bot.right_speeds[n]) + '\n')
@@ -120,7 +115,8 @@ def main(args=None):
         ax.set_title('P Control (p=0.1 for both)')
         plt.legend(loc = 'lower right') # legend location can be changed
 
-        plt.savefig('p_control_final_no_load.png')
+        plt.savefig('Plots/no_p_no_load.png')
+
 
         the_bot.destroy_node()
         rclpy.shutdown()
