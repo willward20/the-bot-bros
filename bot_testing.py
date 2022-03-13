@@ -34,11 +34,11 @@ class TheBot(Node):
         self.linear_l = 0.0
         self.linear_r = 0.0
         self.desired_speed = 0.0
-        self.p = 0.0 # was 0.1
+        self.p = 0.1 
         self.l_error = 0.0 # reference ang speed - actual ang speed
         self.r_error = 0.0
-        self.l_pwm = 0.96
-        self.r_pwm = 0.96
+        self.l_pwm = 0
+        self.r_pwm = 0
         self.start_time = 0.0
         self.left_speeds = []
         self.right_speeds = []
@@ -85,7 +85,7 @@ def main(args=None):
         print("I'm working")
 
         the_bot = TheBot() # creates object of class TheBot
-        the_bot.desired_speed = 0.55 # m/s?
+        the_bot.desired_speed = 0.55 # m/s
 
         the_bot.start_time = time.time()
         rclpy.spin(the_bot)
