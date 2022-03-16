@@ -34,11 +34,11 @@ class TheBot(Node):
         self.linear_l = 0.0
         self.linear_r = 0.0
         self.desired_speed = 0.0
-        self.p = 0.1 
+        self.p = 0.5
         self.l_error = 0.0 # reference ang speed - actual ang speed
         self.r_error = 0.0
-        self.l_pwm = 0
-        self.r_pwm = 0
+        self.l_pwm = 0.0
+        self.r_pwm = 0.0
         self.start_time = 0.0
         self.left_speeds = []
         self.right_speeds = []
@@ -94,7 +94,7 @@ def main(args=None):
     except KeyboardInterrupt:
         # open a data file for writing in same directory as the working program
 
-        file = open('Data/no_p_no_load.txt', 'w')
+        file = open('Data/p_0.25.txt', 'w')
         for n in range(len(the_bot.time_data)):
             # write the data as comma delimited
             file.write(str(the_bot.time_data[n]) + ',' + str(the_bot.left_speeds[n]) + ',' + str(the_bot.right_speeds[n]) + '\n')
@@ -115,7 +115,7 @@ def main(args=None):
         ax.set_title('P Control (p=0.1 for both)')
         plt.legend(loc = 'lower right') # legend location can be changed
 
-        plt.savefig('Plots/no_p_no_load.png')
+        #plt.savefig('Plots/no_p_no_load.png')
 
 
         the_bot.destroy_node()

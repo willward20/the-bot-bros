@@ -58,10 +58,12 @@ def main(args=None):
             linear = serial_data[4]
             angular = serial_data[5]
 
-            print(leftCPS, ",", rightCPS, ",", linear_l, ",", linear_r, ",", linear, ",", angular)
+#            print(leftCPS, ",", rightCPS, ",", linear_l, ",", linear_r, ",", linear, ",", angular)
             linear_l = float(linear_l)
             linear_r = float(linear_r)
             odom_publisher.odom_publish(linear_l, linear_r)
+            print("linear left: ", linear_l)
+            print("linear right: ", linear_r)
 
     odom_publisher.destroy_node()
     rclpy.shutdown()
