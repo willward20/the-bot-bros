@@ -1,4 +1,6 @@
+import os
 from setuptools import setup
+from glob import glob
 
 package_name = 'project_2'
 
@@ -10,6 +12,8 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'launch'), glob(os.path.join("launch", "*.py"))),
+        (os.path.join('share', package_name, 'urdf'), glob(os.path.join("urdf", "*.urdf")))
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -20,6 +24,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'odom_publisher = project_2.odom_publisher:main'
         ],
     },
 )

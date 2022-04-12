@@ -33,16 +33,16 @@ ekf_filter_node:
         world_frame: odom           # Defaults to the value of odom_frame if unspecified
         
         odom0: /odom
-        odom0_config: [true,  true,  true,
-                       false, false, false,
-                       false, false, false,
-                       false, false, true,
-                       false, false, false]
+        odom0_config: [true,  true,  true,  #x, y, z
+                       false, false, false, #roll, pitch, yaw
+                       false, false, false, #vx, vy, vz
+                       false, false, true,  #vroll, vpitch, vyaw
+                       false, false, false] #ax, ay, az
         """
-        imu0: demo/imu
-        imu0_config: [false, false, false,
-                      true,  true,  true,
-                      false, false, false,
-                      false, false, false,
-                      false, false, false]
+        imu0: /imu
+        imu0_config: [false, false, false, #x, y, z
+                      true,  true,  true,  #roll, pitch, yaw
+                      false, false, false, #vx, vy, vz
+                      false, false, false, #vroll, vpitch, vyaw
+                      false, false, false] #ax, ay, az
         """
