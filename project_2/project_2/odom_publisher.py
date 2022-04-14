@@ -36,6 +36,23 @@ class OdometryPublisher(Node):
         self.pre_time = self.get_clock().now()
         # self.i = 0
 
+    def backward_left(self, speed = 0.99):
+        self.robot.left_motor.backward(speed/2) #motor speed halved to keep robot moving backward AND turning left
+        self.robot.right_motor.backward(speed)
+
+    def backward_right(self, speed = 0.99):
+        self.robot.left_motor.backward(speed)
+        self.robot.right_motor.backward(speed/2) #motorspeed halved to keep the robot moving backward and turning right
+
+    def forward_left(self, speed = 0.99):
+        self.robot.left_motor.forward(speed/2) #motor speed halved to keep the robot moving forward AND turning left
+        self.robot.right_motor.forward(speed)
+
+    def forward_right(self, speed = 0.99):
+        self.robot.left_motor.forward(speed)
+        self.robot.right_motor.forward(speed/2) #motor speed halved to keep the robot moving forward AND turning right
+
+
     def vel_sub_cb(self, msg):
         """
         callback function for subsriber
@@ -44,6 +61,38 @@ class OdometryPublisher(Node):
         """
         self.lin_x = msg.linear.x
         self.ang_z = msg.angular.z
+
+        #forward motions
+        if msg.linear.x > 0:
+            #forward right (O)
+            if msg.angular.z > 0:
+                self.forward_right()
+            #forward left (U)
+            elif msg.angular.z < 0:
+                self.forward_left()
+            #straight forward(I)
+            else:
+                self.robot.forward()
+        #backward motions
+        elif msg.linear.x < 0:
+            #backward right (>)
+            if msg.angular.z > 0:
+                self.backward_right()
+            #backward left (M)
+            elif msg.angular.z < 0:
+                self.backward_left()
+            #straight backward (>)
+            else:
+                self.robot.backward()
+        #left (J)
+        elif msg.linear.x == 0 and msg.angular.z < 0:
+            self.robot.left()
+        #right (L)
+        elif msg.linear.x == 0 and msg.angular.z > 0:
+            self.robot.right()
+        #robot stop (K)
+        else:
+            self.robot.stop()
 
     def odom_pub_timer_cb(self):
         """
