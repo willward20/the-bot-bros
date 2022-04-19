@@ -3,10 +3,16 @@ import rclpy
 from rclpy.node import Node
 import tf_transformations
 from tf2_ros import TransformBroadcaster
-
+import serial
 from geometry_msgs.msg import Twist, TransformStamped
 from nav_msgs.msg import Odometry
 from gpiozero import PhaseEnableRobot, LED
+import sys
+import math
+
+# init serial comm
+ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+ser.reset_input_buffer()
 
 
 class OdometryPublisher(Node):
@@ -32,72 +38,102 @@ class OdometryPublisher(Node):
         self.cur_time = self.get_clock().now()
         self.pre_time = self.get_clock().now()
         # self.i = 0
+        self.L = 0.42 # distance between the wheels
 
-    def backward_left(self, speed=0.99):
-        self.robot.left_motor.backward(
-            speed / 2
-        )  # motor speed halved to keep robot moving backward AND turning left
-        self.robot.right_motor.backward(speed)
+        # PID stuff
+        self.max = 0.98 # max wheel speed for mapping
+        self.min = 0.1 # minimum wheel speed
+        self.linear_l = 0.0
+        self.linear_r = 0.0
+        self.p = 0.5
+        self.l_error = 0.0 # reference ang speed - actual ang speed
+        self.r_error = 0.0
+        self.l_pwm = 0.0
+        self.r_pwm = 0.0
+        self.start_time = 0.0
+        self.left_speeds = []
+        self.right_speeds = []
+        self.time_data = []
 
-    def backward_right(self, speed=0.99):
-        self.robot.left_motor.backward(speed)
-        self.robot.right_motor.backward(
-            speed / 2
-        )  # motorspeed halved to keep the robot moving backward and turning right
 
-    def forward_left(self, speed=0.99):
-        self.robot.left_motor.forward(
-            speed / 2
-        )  # motor speed halved to keep the robot moving forward AND turning left
-        self.robot.right_motor.forward(speed)
-
-    def forward_right(self, speed=0.99):
-        self.robot.left_motor.forward(speed)
-        self.robot.right_motor.forward(
-            speed / 2
-        )  # motor speed halved to keep the robot moving forward AND turning right
 
     def vel_sub_cb(self, msg):
-        """
-        callback function for subsriber
-        Input:
-            msg: (target) robot velocity
-        """
+        # get the encoder readings
+        while True:
+        if ser.in_waiting > 0:
+
+            line = ser.readline()
+            #print(line)
+            if line == b'\xff\n' or line == b'\xfe\n':
+                continue
+            serial_data = line.decode('utf-8').rstrip() #speeds is a string
+
+            # split the string into a list ("," is where it splits)
+            # leftCPS, rightCPS, linear_l, linear_r, linear, angular
+            serial_data = serial_data.split(",")
+
+            # convert each string element on the list into an int
+            # serial_data = [int(i) for i in serial_data]
+            # print(serial_data)
+
+            #leftCPS = serial_data[0]
+            #rightCPS = serial_data[1]
+            self.linear_l = serial_data[2]
+            self.linear_r = serial_data[3]
+            #linear = serial_data[4]
+            #angular = serial_data[5]
+
+
+        # get the target speeds from /cmd_vel
         self.lin_x = msg.linear.x
         self.ang_z = msg.angular.z
 
-        # forward motions
-        if msg.linear.x > 0:
-            # forward right (O)
-            if msg.angular.z > 0:
-                self.forward_left()
-            # forward left (U)
-            elif msg.angular.z < 0:
-                self.forward_right()
-            # straight forward(I)
-            else:
-                self.robot.forward()
-        # backward motions
-        elif msg.linear.x < 0:
-            # backward right (>)
-            if msg.angular.z > 0:
-                self.backward_right()
-            # backward left (M)
-            elif msg.angular.z < 0:
-                self.backward_left()
-            # straight backward (>)
-            else:
-                self.robot.backward()
-        # left (J)
-        else:  # x == 0
-            if msg.angular.z > 0:
-                self.robot.left()
-            # backward left (M)
-            elif msg.angular.z < 0:
-                self.robot.right()
-            # straight backward (>)
-            else:
-                self.robot.stop()
+        # convert linear and angular to left and right wheel speeds
+        v_l = msg.linear.x - (msg.angular.z * self.L / 2) # target left wheel lin speed
+        v_r = msg.linear.x + (msg.angular.z * self.L / 2) # target right wheel lin speed
+
+        # compare to current LR wheel speeds
+        # incrment or decrement the speeds
+        self.l_error = abs(v_l) - self.linear_l
+        self.r_error = abs(v_r) - self.linear_r
+
+        print("l_error", self.l_error)
+        print("r_error", self.r_error)
+
+        self.l_pwm = self.l_pwm + self.p*self.l_error
+        self.r_pwm = self.r_pwm + self.p*self.r_error
+
+        if (self.r_pwm > self.max):
+            self.r_pwm = self.max
+        if (self.l_pwm > self.max):
+            self.l_pwm = self.max
+        if (self.r_pwm < self.min):
+            self.r_pwm = self.min
+        if (self.l_pwm < self.min):
+            self.l_pwm = self.min
+
+        print("l_pwm ", self.l_pwm)
+        print("r_pwm ", self.r_pwm)
+        print(" ")
+        if v_l >=0
+            self.robot.left_motor.forward(self.l_pwm)
+        else:
+            self.robot.left_motor.backward(self.l_pwm)
+
+        if v_r >= 0:
+            self.robot.right_motor.forward(self.r_pwm)
+        else:
+            self.robot.right_motor.backward(self.r_pwm)
+
+        self.time_data.append(time.time() - self.start_time)
+        self.left_speeds.append(self.linear_l)
+        self.right_speeds.append(self.linear_r)
+
+
+
+
+
+
 
     def odom_pub_timer_cb(self):
         """
