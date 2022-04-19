@@ -9,6 +9,7 @@ from nav_msgs.msg import Odometry
 from gpiozero import PhaseEnableRobot, LED
 import sys
 import math
+import time
 
 # init serial comm
 ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
@@ -42,10 +43,10 @@ class OdometryPublisher(Node):
 
         # PID stuff
         self.max = 0.98 # max wheel speed for mapping
-        self.min = 0.1 # minimum wheel speed
+        self.min = 0 # minimum wheel speed
         self.linear_l = 0.0
         self.linear_r = 0.0
-        self.p = 0.5
+        self.p = 0.1
         self.l_error = 0.0 # reference ang speed - actual ang speed
         self.r_error = 0.0
         self.l_pwm = 0.0
@@ -58,79 +59,77 @@ class OdometryPublisher(Node):
 
 
     def vel_sub_cb(self, msg):
-        # get the encoder readings
         while True:
-        if ser.in_waiting > 0:
+            # get the encoder readings
+            if ser.in_waiting > 0:
+                line = ser.readline()
+                print(line)
+                if line == b'\xff\n' or line == b'\xfe\n':
+                    break
+                serial_data = line.decode('utf-8').rstrip() #speeds is a string
 
-            line = ser.readline()
-            #print(line)
-            if line == b'\xff\n' or line == b'\xfe\n':
-                continue
-            serial_data = line.decode('utf-8').rstrip() #speeds is a string
+                # split the string into a list ("," is where it splits)
+                # leftCPS, rightCPS, linear_l, linear_r, linear, angular
+                serial_data = serial_data.split(",")
 
-            # split the string into a list ("," is where it splits)
-            # leftCPS, rightCPS, linear_l, linear_r, linear, angular
-            serial_data = serial_data.split(",")
+                # convert each string element on the list into an int
+                # serial_data = [int(i) for i in serial_data]
+                # print(serial_data)
 
-            # convert each string element on the list into an int
-            # serial_data = [int(i) for i in serial_data]
-            # print(serial_data)
+                #leftCPS = serial_data[0]
+                #rightCPS = serial_data[1]
+                self.linear_l = serial_data[2]
+                self.linear_r = serial_data[3]
+                #linear = serial_data[4]
+                #angular = serial_data[5]
+                self.linear_l = float(self.linear_l)
+                self.linear_r = float(self.linear_r)
 
-            #leftCPS = serial_data[0]
-            #rightCPS = serial_data[1]
-            self.linear_l = serial_data[2]
-            self.linear_r = serial_data[3]
-            #linear = serial_data[4]
-            #angular = serial_data[5]
+            # get the target speeds from /cmd_vel
+            self.lin_x = msg.linear.x
+            self.ang_z = msg.angular.z
 
+            # convert linear and angular to left and right wheel speeds
+            v_l = msg.linear.x - (msg.angular.z * self.L / 2) # target left wheel lin speed
+            v_r = msg.linear.x + (msg.angular.z * self.L / 2) # target right wheel lin speed
+            print("v_l",  v_l)
+            print("v_r", v_r)
 
-        # get the target speeds from /cmd_vel
-        self.lin_x = msg.linear.x
-        self.ang_z = msg.angular.z
+            # compare to current LR wheel speeds
+            # incrment or decrement the speeds
+            self.l_error = abs(v_l) - self.linear_l
+            self.r_error = abs(v_r) - self.linear_r
 
-        # convert linear and angular to left and right wheel speeds
-        v_l = msg.linear.x - (msg.angular.z * self.L / 2) # target left wheel lin speed
-        v_r = msg.linear.x + (msg.angular.z * self.L / 2) # target right wheel lin speed
+            print("l_error", self.l_error)
+            print("r_error", self.r_error)
 
-        # compare to current LR wheel speeds
-        # incrment or decrement the speeds
-        self.l_error = abs(v_l) - self.linear_l
-        self.r_error = abs(v_r) - self.linear_r
+            if (abs(self.l_error) < 0.05 and abs(self.r_error < 0.05)):
+                break
 
-        print("l_error", self.l_error)
-        print("r_error", self.r_error)
+            self.l_pwm = self.l_pwm + self.p*self.l_error
+            self.r_pwm = self.r_pwm + self.p*self.r_error
 
-        self.l_pwm = self.l_pwm + self.p*self.l_error
-        self.r_pwm = self.r_pwm + self.p*self.r_error
+            if (self.r_pwm > self.max):
+                self.r_pwm = self.max
+            if (self.l_pwm > self.max):
+                self.l_pwm = self.max
+            if (self.r_pwm < self.min):
+                self.r_pwm = self.min
+            if (self.l_pwm < self.min):
+                self.l_pwm = self.min
 
-        if (self.r_pwm > self.max):
-            self.r_pwm = self.max
-        if (self.l_pwm > self.max):
-            self.l_pwm = self.max
-        if (self.r_pwm < self.min):
-            self.r_pwm = self.min
-        if (self.l_pwm < self.min):
-            self.l_pwm = self.min
+            print("l_pwm ", self.l_pwm)
+            print("r_pwm ", self.r_pwm)
+            print(" ")
+            if v_l >= 0:
+                self.robot.left_motor.forward(self.l_pwm)
+            else:
+                self.robot.left_motor.backward(self.l_pwm)
 
-        print("l_pwm ", self.l_pwm)
-        print("r_pwm ", self.r_pwm)
-        print(" ")
-        if v_l >=0
-            self.robot.left_motor.forward(self.l_pwm)
-        else:
-            self.robot.left_motor.backward(self.l_pwm)
-
-        if v_r >= 0:
-            self.robot.right_motor.forward(self.r_pwm)
-        else:
-            self.robot.right_motor.backward(self.r_pwm)
-
-        self.time_data.append(time.time() - self.start_time)
-        self.left_speeds.append(self.linear_l)
-        self.right_speeds.append(self.linear_r)
-
-
-
+            if v_r >= 0:
+                self.robot.right_motor.forward(self.r_pwm)
+            else:
+                self.robot.right_motor.backward(self.r_pwm)
 
 
 
