@@ -29,13 +29,17 @@ class OdometryPublisher(Node):
         # init odom topic publisher
         self.odom_pub = self.create_publisher(Odometry, "/odom", 1)
         # init a timer for publishing tfs and topics
-        self.odom_pub_timer = self.create_timer(0.1, self.odom_pub_timer_cb)
+        self.odom_pub_timer = self.create_timer(0.01, self.odom_pub_timer_cb)
+        # timer callback function for PID control
+        self.pid_timer = self.create_timer(0.01, self.pid_timer_cb)
+
+
         # variables
         self.x = 0.0
         self.y = 0.0
         self.th = 0.0
-        self.lin_x = 0.0
-        self.ang_z = 0.0
+        self.lin_x = 0.0 # /cmd_vel command
+        self.ang_z = 0.0 # /cmd_vel command
         self.cur_time = self.get_clock().now()
         self.pre_time = self.get_clock().now()
         # self.i = 0
@@ -59,6 +63,10 @@ class OdometryPublisher(Node):
 
 
     def vel_sub_cb(self, msg):
+        # get the target speeds from /cmd_vel
+        self.lin_x = msg.linear.x
+        self.ang_z = msg.angular.z
+        """
         while True:
             # get the encoder readings
             if ser.in_waiting > 0:
@@ -85,52 +93,53 @@ class OdometryPublisher(Node):
                 self.linear_l = float(self.linear_l)
                 self.linear_r = float(self.linear_r)
 
-            # get the target speeds from /cmd_vel
-            self.lin_x = msg.linear.x
-            self.ang_z = msg.angular.z
+        """   
 
-            # convert linear and angular to left and right wheel speeds
-            v_l = msg.linear.x - (msg.angular.z * self.L / 2) # target left wheel lin speed
-            v_r = msg.linear.x + (msg.angular.z * self.L / 2) # target right wheel lin speed
-            print("v_l",  v_l)
-            print("v_r", v_r)
 
-            # compare to current LR wheel speeds
-            # incrment or decrement the speeds
-            self.l_error = abs(v_l) - self.linear_l
-            self.r_error = abs(v_r) - self.linear_r
 
-            print("l_error", self.l_error)
-            print("r_error", self.r_error)
+    def pid_timer_cb(self):
+        # all of PID control
+        # convert linear and angular to left and right wheel speeds
+        v_l = msg.linear.x - (msg.angular.z * self.L / 2) # target left wheel lin speed
+        v_r = msg.linear.x + (msg.angular.z * self.L / 2) # target right wheel lin speed
+        print("v_l",  v_l)
+        print("v_r", v_r)
 
-            if (abs(self.l_error) < 0.05 and abs(self.r_error < 0.05)):
-                break
+        # compare to current LR wheel speeds
+        # incrment or decrement the speeds
+        self.l_error = abs(v_l) - self.linear_l
+        self.r_error = abs(v_r) - self.linear_r
 
-            self.l_pwm = self.l_pwm + self.p*self.l_error
-            self.r_pwm = self.r_pwm + self.p*self.r_error
+        print("l_error", self.l_error)
+        print("r_error", self.r_error)
 
-            if (self.r_pwm > self.max):
-                self.r_pwm = self.max
-            if (self.l_pwm > self.max):
-                self.l_pwm = self.max
-            if (self.r_pwm < self.min):
-                self.r_pwm = self.min
-            if (self.l_pwm < self.min):
-                self.l_pwm = self.min
+        if (abs(self.l_error) < 0.05 and abs(self.r_error < 0.05)):
+            break
 
-            print("l_pwm ", self.l_pwm)
-            print("r_pwm ", self.r_pwm)
-            print(" ")
-            if v_l >= 0:
-                self.robot.left_motor.forward(self.l_pwm)
-            else:
-                self.robot.left_motor.backward(self.l_pwm)
+        self.l_pwm = self.l_pwm + self.p*self.l_error
+        self.r_pwm = self.r_pwm + self.p*self.r_error
 
-            if v_r >= 0:
-                self.robot.right_motor.forward(self.r_pwm)
-            else:
-                self.robot.right_motor.backward(self.r_pwm)
+        if (self.r_pwm > self.max):
+            self.r_pwm = self.max
+        if (self.l_pwm > self.max):
+            self.l_pwm = self.max
+        if (self.r_pwm < self.min):
+            self.r_pwm = self.min
+        if (self.l_pwm < self.min):
+            self.l_pwm = self.min
 
+        print("l_pwm ", self.l_pwm)
+        print("r_pwm ", self.r_pwm)
+        print(" ")
+        if v_l >= 0:
+            self.robot.left_motor.forward(self.l_pwm)
+        else:
+            self.robot.left_motor.backward(self.l_pwm)
+
+        if v_r >= 0:
+            self.robot.right_motor.forward(self.r_pwm)
+        else:
+            self.robot.right_motor.backward(self.r_pwm)
 
 
 
@@ -138,6 +147,41 @@ class OdometryPublisher(Node):
         """
         timer callback function for periodically executed jobs
         """
+
+
+        # get the encoder readings
+        if ser.in_waiting > 0:
+            line = ser.readline()
+            print(line)
+            if line == b'\xff\n' or line == b'\xfe\n':
+                dummy = 0 # for now
+            serial_data = line.decode('utf-8').rstrip() #speeds is a string
+
+            # split the string into a list ("," is where it splits)
+            # leftCPS, rightCPS, linear_l, linear_r, linear, angular
+            serial_data = serial_data.split(",")
+
+            # convert each string element on the list into an int
+            # serial_data = [int(i) for i in serial_data]
+            # print(serial_data)
+
+            #leftCPS = serial_data[0]
+            #rightCPS = serial_data[1]
+            self.linear_l = serial_data[2]
+            self.linear_r = serial_data[3]
+            #linear = serial_data[4]
+            #angular = serial_data[5]
+            self.linear_l = float(self.linear_l)
+            self.linear_r = float(self.linear_r)
+
+        """
+        Note: update the following code to use real encoder data for odom!!
+        Note: update the following code to use real encoder data for odom!!
+        Note: update the following code to use real encoder data for odom!!
+        Note: update the following code to use real encoder data for odom!!
+        Note: update the following code to use real encoder data for odom!!
+        """
+
         # update pose
         self.cur_time = self.get_clock().now()
         dt = (self.cur_time - self.pre_time).nanoseconds * 1e-9  # convert to seconds
