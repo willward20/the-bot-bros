@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'imu_publisher = project_1.imu_pub:main'
         ],
     },
 )
