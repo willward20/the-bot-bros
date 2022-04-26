@@ -41,8 +41,8 @@ class ImagePublisher(Node):
     # The argument '0' gets the default webcam.
     # Start capturing video input from the camera
     self.cap = cv2.VideoCapture(0)
-    self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 200)
-    self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 200)
+    self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     # Visualization parameters
     self.row_size = 20
     self.left_margin = 24
@@ -52,11 +52,11 @@ class ImagePublisher(Node):
 
     # Initialize the object detection model
     options = ObjectDetectorOptions(
-        num_threads=num_threads,
+        num_threads=4,
         score_threshold=0.3,
         max_results=3,
-        enable_edgetpu=enable_edgetpu)
-    self.detector = ObjectDetector(model_path=model, options=options)
+        enable_edgetpu=False)
+    self.detector = ObjectDetector(model_path='efficientdet_lite0.tflite', options=options)
  
     # Used to convert between ROS and OpenCV images
     self.br = CvBridge()
@@ -83,7 +83,7 @@ class ImagePublisher(Node):
 
 
     # Display image
-    cv2.imshow("camera", image)
+    cv2.imshow("camera", frame)
     
           
     if ret == True:
