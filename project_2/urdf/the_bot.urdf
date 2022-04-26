@@ -4,7 +4,7 @@
     <!-- https://navigation.ros.org/setup_guides/urdf/setup_urdf.html -->
 
     <!-- define colors -->
-    <material name="black">
+    <!-- <material name="black">
         <color rgba="0 0 0 1" />
     </material>
     <material name="white">
@@ -21,31 +21,34 @@
     </material>
     <material name="gray">
         <color rgba="0.5 0.5 0.5 1" />
-    </material>
+    </material> -->
 
     <!-- Define robot constants -->
     <!-- pi -->
     <xacro:property name="PI" value="3.141592653589793" />
     <!-- base properties -->
-    <xacro:property name="base_width" value="0.2032" /> <!--forward axis-->
-    <xacro:property name="base_depth" value="0.17145" />
-    <xacro:property name="base_height" value="0.004" />
-    <xacro:property name="base_mass" value="2.0" />
-    <!-- wheel properties -->
+    <xacro:property name="base_width" value="0.365" /> <!--forward axis-->
+    <xacro:property name="base_depth" value="0.305" />
+    <xacro:property name="base_height" value="0.105" />
+    <!-- <xacro:property name="base_mass" value="2.0" /> -->
+
+    
+    <!-- wheel properties
     <xacro:property name="wheel_ygap" value="0.005" /> 
     <xacro:property name="wheel_xoff" value="0.0385" />
     <xacro:property name="wheel_zoff" value="0.0154" />
     <xacro:property name="wheel_radius" value="0.0403" />
     <xacro:property name="wheel_width" value="0.0099" />
     <xacro:property name="wheel_mass" value="0.2" />
-    <!-- caster properties -->
+    caster properties
     <xacro:property name="caster_xoff" value="-0.0805" />
     <xacro:property name="caster_zoff" value="-0.012" />
     <xacro:property name="caster_radius" value="0.012" />
-    <xacro:property name="caster_mass" value="0.3" />
+    <xacro:property name="caster_mass" value="0.3" /> -->
+
     <!-- lidar properties -->
     <xacro:property name="lidar_radius" value="0.035" />
-    <xacro:property name="lidar_height" value="0.02" />
+    <xacro:property name="lidar_height" value="0.0925" />
     <xacro:property name="lidar_zoff" value="0.05" />
     <xacro:property name="lidar_mass" value="0.17" />
     <!-- imu properties -->
@@ -54,9 +57,9 @@
     <xacro:property name="imu_height" value="0.001" />
     <xacro:property name="imu_mass" value="0.002" />
 
-
+    
     <!-- Define intertial property macros  -->
-    <xacro:macro name="box_inertia" params="m w d h">
+    <!-- <xacro:macro name="box_inertia" params="m w d h">
         <inertial>
             <origin xyz="0 0 0" rpy="${pi/2} 0 ${pi/2}" />
             <mass value="${m}" />
@@ -79,7 +82,7 @@
         </inertial>
     </xacro:macro>
 
-    <!-- Define wheel macros -->
+     Define wheel macros 
     <xacro:macro name="wheel" params="prefix y_reflect">
         <joint name="${prefix}_joint" type="continuous">
             <parent link="base_link" />
@@ -105,7 +108,7 @@
             <xacro:cylinder_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_width}" />
         </link>
 
-    </xacro:macro>
+    </xacro:macro> -->
 
     <!-- Robot Base -->
     <link name="base_link">
@@ -115,26 +118,27 @@
             </geometry>
             <material name="orange" />
         </visual>
-        <collision>
+        <!-- <collision>
             <geometry>
                 <box size="${base_width} ${base_depth} ${base_height}" />
             </geometry>
-        </collision>
+        </collision> -->
     </link>
-    <gazebo reference="base_link">
+    <!-- <gazebo reference="base_link">
         <material>Gazebo/Wood</material>
-    </gazebo>
+    </gazebo> -->
 
     <!-- Robot Footprint -->
-    <joint name="footprint_joint" type="fixed">
+    <!-- <joint name="footprint_joint" type="fixed">
         <parent link="base_link" />
         <child link="base_footprint" />
         <origin xyz="0.0 0.0 ${-(wheel_radius)}" rpy="0 0 0" />
     </joint>
 
-    <link name="base_footprint" />
+    <link name="base_footprint" /> -->
+    
 
-    <!-- Base Inertial -->
+    <!-- Base Inertial
     <joint name="base_inertial_joint" type="fixed">
         <parent link="base_link" />
         <child link="base_inertial" />
@@ -145,7 +149,7 @@
         <xacro:box_inertia m="${base_mass}" w="${base_width}" d="${base_depth}" h="${base_height}" />
     </link>
 
-    <!-- Wheels -->
+     Wheels
     <xacro:wheel prefix="left_wheel" y_reflect="1" />
     <gazebo reference="left_wheel_link">
         <mu1>1.0</mu1>
@@ -160,7 +164,7 @@
         <material>Gazebo/Blue</material>
     </gazebo>
 
-    <!-- Caster ball -->
+    Caster ball 
     <joint name="caster_joint" type="fixed">
         <parent link="base_link" />
         <child link="caster" />
@@ -187,13 +191,13 @@
         <mu1>0.0</mu1>
         <mu2>0.0</mu2>
         <material>Gazebo/Gray</material>
-    </gazebo>
+    </gazebo> -->
 
     <!-- lidar -->
     <joint name="lidar_joint" type="fixed">
         <parent link="base_link" />
         <child link="lidar_link" />
-        <origin xyz="0 0 ${(base_height+lidar_height)/2+lidar_zoff}" rpy="0 0 0" />
+        <origin xyz="-0.15 0 0.15" rpy="0 0 0" />
     </joint>
 
     <link name="lidar_link">
@@ -212,7 +216,8 @@
         </collision>
         <xacro:cylinder_inertia m="${lidar_mass}" r="${lidar_radius}" h="${lidar_height}" />
     </link>
-    <gazebo reference="lidar_link">
+
+    <!-- <gazebo reference="lidar_link">
         <material>Gazebo/Black</material>
         <sensor name="lidar" type="ray">
             <always_on>true</always_on>
@@ -246,30 +251,30 @@
                 <frame_name>lidar_link</frame_name>
             </plugin>
         </sensor>
-    </gazebo>
+    </gazebo> -->
 
     <!-- imu -->
     <joint name="imu_joint" type="fixed">
         <parent link="base_link"/>
         <child link="imu_link"/>
-        <origin xyz="${base_width/4} 0 ${(base_height+imu_height)/2}"/>
+        <origin xyz="0 0 ${base_height/2 + imu_height}"/>
     </joint>
 
     <link name="imu_link">
         <visual>
             <geometry>
-                <box size="${imu_width} ${imu_depth} ${imu_height}"/>
+                <box size="${imu_depth} ${imu_width} ${imu_height}"/>
             </geometry>
-            <material name="purple" />
         </visual>
-        <collision>
+        <!-- <collision>
             <geometry>
                 <box size="${imu_width} ${imu_depth} ${imu_height}"/>
             </geometry>
         </collision>
-        <xacro:box_inertia m="${imu_mass}" w="${imu_width}" d="${imu_depth}" h="${imu_height}" />
+        <xacro:box_inertia m="${imu_mass}" w="${imu_width}" d="${imu_depth}" h="${imu_height}" /> -->
     </link>
-    <gazebo reference="imu_link">
+
+    <!-- <gazebo reference="imu_link">
         <material>Gazebo/Purple</material>
         <sensor name="imu_sensor" type="imu">
             <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
@@ -337,15 +342,15 @@
                 </linear_acceleration>
             </imu>
         </sensor>
-    </gazebo>
+    </gazebo> -->
 
     <!-- differential_drive_controller plugin -->
-    <gazebo>
+    <!-- <gazebo>
         <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
             <ros>
                 <namespace>/bot</namespace>
-                <argument>cmd_vel</argument> <!--when you run teleop_twist_keyboard
-                    you need to remap the topic to /bot/cmd_vel-->
+                <argument>cmd_vel</argument> when you run teleop_twist_keyboard
+                    you need to remap the topic to /bot/cmd_vel
                 <argument>odom:=odom_demo</argument>
             </ros>
             <robot_base_frame>base_link</robot_base_frame>
@@ -362,5 +367,7 @@
             <!-- Wheel acceleration, in rad/s^2, defaults to 0.0 rad/s^2 -->
             <max_acceleration>1.0</max_acceleration>
         </plugin>
-    </gazebo>
+    </gazebo> -->
+
+
 </robot>

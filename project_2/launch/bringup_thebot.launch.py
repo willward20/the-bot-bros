@@ -52,6 +52,12 @@ def generate_launch_description():
         name="odom_publisher",
     )
 
+    imu_pub_node = Node(
+        package="project_2",
+        executable="imu_publisher",
+        name="imu_pub",
+    )
+
     robot_localization_node = Node(
         package="robot_localization",
         executable="ekf_node",
