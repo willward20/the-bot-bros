@@ -33,18 +33,18 @@
     <!-- <xacro:property name="base_mass" value="2.0" /> -->
 
     
-    <!-- wheel properties
+    <!-- wheel properties -->
     <xacro:property name="wheel_ygap" value="0.005" /> 
     <xacro:property name="wheel_xoff" value="0.0385" />
     <xacro:property name="wheel_zoff" value="0.0154" />
     <xacro:property name="wheel_radius" value="0.0403" />
     <xacro:property name="wheel_width" value="0.0099" />
     <xacro:property name="wheel_mass" value="0.2" />
-    caster properties
+    <!--caster properties
     <xacro:property name="caster_xoff" value="-0.0805" />
     <xacro:property name="caster_zoff" value="-0.012" />
     <xacro:property name="caster_radius" value="0.012" />
-    <xacro:property name="caster_mass" value="0.3" /> -->
+    <xacro:property name="caster_mass" value="0.3" />-->
 
     <!-- lidar properties -->
     <xacro:property name="lidar_radius" value="0.035" />
@@ -129,13 +129,13 @@
     </gazebo> -->
 
     <!-- Robot Footprint -->
-    <!-- <joint name="footprint_joint" type="fixed">
+    <joint name="footprint_joint" type="fixed">
         <parent link="base_link" />
         <child link="base_footprint" />
         <origin xyz="0.0 0.0 ${-(wheel_radius)}" rpy="0 0 0" />
     </joint>
 
-    <link name="base_footprint" /> -->
+    <link name="base_footprint" /> 
     
 
     <!-- Base Inertial
@@ -208,13 +208,14 @@
             </geometry>
             <material name="black" />
         </visual>
-        <collision>
+       <!-- <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <cylinder radius="${lidar_radius}" length="${lidar_height}" />
             </geometry>
         </collision>
         <xacro:cylinder_inertia m="${lidar_mass}" r="${lidar_radius}" h="${lidar_height}" />
+        -->
     </link>
 
     <!-- <gazebo reference="lidar_link">
@@ -364,7 +365,7 @@
             <publish_wheel_tf>true</publish_wheel_tf>
             <odometry_frame>odom</odometry_frame>
             <max_wheel_torque>10</max_wheel_torque>
-            <!-- Wheel acceleration, in rad/s^2, defaults to 0.0 rad/s^2 -->
+             Wheel acceleration, in rad/s^2, defaults to 0.0 rad/s^2
             <max_acceleration>1.0</max_acceleration>
         </plugin>
     </gazebo> -->

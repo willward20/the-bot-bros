@@ -61,7 +61,9 @@ class OdometryPublisher(Node):
         self.time_data = []
         self.l_state = 1 #1 if forward, -1 if backward
         self.r_state = 1 #1 if forward, -1 if backward
-
+        
+        self.odom_lin_x = 0
+        self.odom_ang_z = 0
 
     def vel_sub_cb(self, msg):
         # get the target speeds from /cmd_vel
@@ -173,42 +175,36 @@ class OdometryPublisher(Node):
         if ser.in_waiting > 0:
             line = ser.readline()
             #print(line)
-            if line == b'\xff\n' or line == b'\xfe\n':
-                dummy = 0 # for now
-            serial_data = line.decode('utf-8').rstrip() #speeds is a string
+            if  b'\xff\n' not in line and  b'\xfe\n' not in line:
+                serial_data = line.decode('utf-8').rstrip() #speeds is a string
 
-            # split the string into a list ("," is where it splits)
-            # leftCPS, rightCPS, linear_l, linear_r, linear, angular
-            serial_data = serial_data.split(",")
+                # split the string into a list ("," is where it splits)
+                # leftCPS, rightCPS, linear_l, linear_r, linear, angular
+                serial_data = serial_data.split(",")
 
-            # convert each string element on the list into an int
-            # serial_data = [int(i) for i in serial_data]
-            # print(serial_data)
+                # convert each string element on the list into an int
+                # serial_data = [int(i) for i in serial_data]
+                #  print(serial_data)
 
-            #leftCPS = serial_data[0]
-            #rightCPS = serial_data[1]
-            self.linear_l = serial_data[2]
-            self.linear_r = serial_data[3]
-            #linear = serial_data[4]
-            #angular = serial_data[5]
-            self.linear_l = float(self.linear_l)
-            self.linear_r = float(self.linear_r)
+                #leftCPS = serial_data[0]
+                #rightCPS = serial_data[1]
+                self.linear_l = serial_data[2]
+                self.linear_r = serial_data[3]
+                #linear = serial_data[4]
+                #angular = serial_data[5]
+                self.linear_l = float(self.linear_l)
+                self.linear_r = float(self.linear_r)
 
-        """
-        Note: update the following code to use real encoder data for odom!!
-        Note: update the following code to use real encoder data for odom!!
-        Note: update the following code to use real encoder data for odom!!
-        Note: update the following code to use real encoder data for odom!!
-        Note: update the following code to use real encoder data for odom!!
-        """
+        self.odom_lin_x = (self.linear_l + self.linear_r) / 2
+        self.odom_ang_z = (self.linear_r - self.linear_l) / 0.21
 
         # update pose
         self.cur_time = self.get_clock().now()
         dt = (self.cur_time - self.pre_time).nanoseconds * 1e-9  # convert to seconds
         # print(dt)
-        delta_x = self.lin_x * np.cos(self.th) * dt
-        delta_y = self.lin_x * np.sin(self.th) * dt
-        delta_th = self.ang_z * dt
+        delta_x = self.odom_lin_x * np.cos(self.th) * dt
+        delta_y = self.odom_lin_x * np.sin(self.th) * dt
+        delta_th = self.odom_ang_z * dt
         self.x += delta_x
         self.y += delta_y
         self.th += delta_th
@@ -237,8 +233,8 @@ class OdometryPublisher(Node):
         msg.pose.pose.orientation.y = q[1]
         msg.pose.pose.orientation.z = q[2]
         msg.pose.pose.orientation.w = q[3]
-        msg.twist.twist.linear.x = self.lin_x
-        msg.twist.twist.angular.z = self.ang_z
+        msg.twist.twist.linear.x = self.odom_lin_x
+        msg.twist.twist.angular.z = self.odom_ang_z
         self.odom_pub.publish(msg)
         self.get_logger().debug(f"Publishing: {msg}")
         self.pre_time = self.cur_time

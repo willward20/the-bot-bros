@@ -1,0 +1,6 @@
+source;share/cv_basics/hook/pythonpath.ps1
+source;share/cv_basics/hook/pythonpath.dsv
+source;share/cv_basics/hook/pythonpath.sh
+source;share/cv_basics/hook/ament_prefix_path.ps1
+source;share/cv_basics/hook/ament_prefix_path.dsv
+source;share/cv_basics/hook/ament_prefix_path.sh
