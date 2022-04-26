@@ -202,9 +202,12 @@ class OdometryPublisher(Node):
         self.cur_time = self.get_clock().now()
         dt = (self.cur_time - self.pre_time).nanoseconds * 1e-9  # convert to seconds
         # print(dt)
-        delta_x = self.odom_lin_x * np.cos(self.th) * dt
-        delta_y = self.odom_lin_x * np.sin(self.th) * dt
-        delta_th = self.odom_ang_z * dt
+        # delta_x = self.odom_lin_x * np.cos(self.th) * dt
+        # delta_y = self.odom_lin_x * np.sin(self.th) * dt
+        delta_x = self.lin_x * np.cos(self.th) * dt
+        delta_y = self.lin_x * np.sin(self.th) * dt
+        # delta_th = self.odom_ang_z * dt
+        delta_th = self.ang_z * dt
         self.x += delta_x
         self.y += delta_y
         self.th += delta_th
@@ -233,8 +236,10 @@ class OdometryPublisher(Node):
         msg.pose.pose.orientation.y = q[1]
         msg.pose.pose.orientation.z = q[2]
         msg.pose.pose.orientation.w = q[3]
-        msg.twist.twist.linear.x = self.odom_lin_x
-        msg.twist.twist.angular.z = self.odom_ang_z
+        # msg.twist.twist.linear.x = self.odom_lin_x
+        # msg.twist.twist.angular.z = self.odom_ang_z
+        msg.twist.twist.linear.x = self.lin_x
+        msg.twist.twist.angular.z = self.ang_z
         self.odom_pub.publish(msg)
         self.get_logger().debug(f"Publishing: {msg}")
         self.pre_time = self.cur_time
