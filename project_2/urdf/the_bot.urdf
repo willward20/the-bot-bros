@@ -127,7 +127,22 @@
     <!-- <gazebo reference="base_link">
         <material>Gazebo/Wood</material>
     </gazebo> -->
-
+   
+    <!-- Robot Camera -->
+    <joint name="camera_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="camera_link" />
+        <origin xyz="0.1778 0.0 0.0" />
+    </joint> 
+    <link name="camera_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                 <box size="0.0115 0.03 0.03"/>
+            <geometry>
+            <material name="black" />
+        </visual>
+    </link>
     <!-- Robot Footprint -->
     <joint name="footprint_joint" type="fixed">
         <parent link="base_link" />
@@ -197,7 +212,7 @@
     <joint name="lidar_joint" type="fixed">
         <parent link="base_link" />
         <child link="lidar_link" />
-        <origin xyz="-0.15 0 0.15" rpy="0 0 0" />
+        <origin xyz="-0.15 0 0.105" rpy="0 0 0" />
     </joint>
 
     <link name="lidar_link">
