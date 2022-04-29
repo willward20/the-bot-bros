@@ -46,6 +46,12 @@ def generate_launch_description():
         name="joint_state_publisher",
     )
 
+    camera_pub_node = Node(
+            package="cv_basics",
+            executable="img_publisher",
+            name="webcam_pub",
+            )
+
     odom_pub_node = Node(
         package="project_2",
         executable="odom_publisher",
@@ -83,6 +89,7 @@ def generate_launch_description():
             sim_time_arg,
             model_arg,
             odom_pub_node,
+            camera_pub_node,
             imu_pub_node,
             joint_state_publisher_node,
             robot_state_publisher_node,

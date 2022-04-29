@@ -175,7 +175,7 @@ class OdometryPublisher(Node):
         if ser.in_waiting > 0:
             line = ser.readline()
             #print(line)
-            if  b'\xff\n' not in line and  b'\xfe\n' not in line:
+            if  b'\xff' not in line and  b'\xfe' not in line:
                 serial_data = line.decode('utf-8').rstrip() #speeds is a string
 
                 # split the string into a list ("," is where it splits)

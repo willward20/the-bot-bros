@@ -21,7 +21,6 @@ setup(
     entry_points={
         'console_scripts': [
           'img_publisher = cv_basics.webcam_pub:main',
-          'img_subscriber = cv_basics.webcam_sub:main',
         ],
     },
 )
