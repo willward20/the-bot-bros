@@ -1,7 +1,9 @@
 # the-bot-bros
-Our team designed, built, and progammed a ground robot for mapping a physical environment using LiDAR and SLAM. The project was divided into two parts: [project_1](https://github.com/willward20/the-bot-bros/tree/main/project_1) and [project_2]().
+Our team designed, built, and progammed a ground robot for mapping a physical environment using LiDAR and SLAM. The project was divided into two parts: [project_1](https://github.com/willward20/the-bot-bros/tree/main/project_1) and [project_2](https://github.com/willward20/the-bot-bros/tree/main/project_2). Details about each project are given below.
 
 ## Project 1
+
+## Project 2
 
 
 
